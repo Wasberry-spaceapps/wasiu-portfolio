@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>The Odyssey | Developer Portfolio</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&amp;family=Inter:wght@300;900&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet"/>
+<style>
+        /* CORE SETUP */
+        html { scroll-behavior: smooth; }
+        body {
+            background-color: #0a0805;
+            color: #ffffff;
+            margin: 0;
+            overflow-x: hidden;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* LAYERS */
+        #odyssey-canvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0; pointer-events: none;
+        }
+
+        .code-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1; pointer-events: none; overflow: hidden;
+        }
+        .code-line {
+            position: absolute;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: rgba(194, 178, 128, 0.08);
+            white-space: nowrap;
+        }
+
+        .sticky-wrapper {
+            position: relative;
+            height: 600vh;
+            width: 100%;
+            z-index: 10;
+        }
+
+        .cube-container {
+            position: sticky; top: 0; left: 0; width: 100%; height: 100vh;
+            overflow: hidden;
+            mix-blend-mode: screen; 
+        }
+
+        .content-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            z-index: 20; pointer-events: none;
+        }
+
+        /* PROJECT CARDS */
+        .project-card {
+            position: absolute;
+            width: 260px;
+            padding: 20px;
+            background: rgba(20, 20, 20, 0.6);
+            border: 1px solid rgba(194, 178, 128, 0.3); 
+            backdrop-filter: blur(8px);
+            border-radius: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.9);
+            transform: rotate(-5deg);
+            transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            cursor: pointer;
+            pointer-events: auto; 
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+            z-index: 40;
+            overflow: hidden; 
+        }
+
+        .project-card:hover {
+            transform: rotate(0deg) scale(1.02);
+            width: 450px; 
+            border-color: rgba(194, 178, 128, 0.9);
+            background: rgba(10, 8, 5, 0.95);
+            z-index: 100;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        /* Generated Abstract Image (Hidden by default) */
+        .project-art {
+            height: 0;
+            width: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+            opacity: 0;
+            transition: all 0.5s ease;
+            margin-bottom: 0;
+            filter: sepia(20%) hue-rotate(180deg) saturate(150%) contrast(110%);
+        }
+
+        .project-card:hover .project-art {
+            height: 150px; /* Reveal height */
+            opacity: 1;
+            margin-bottom: 15px;
+        }
+
+        .project-number {
+            font-size: 0.7rem; opacity: 0.5; display: block;
+            margin-bottom: 8px; letter-spacing: 1px;
+        }
+
+        .project-title {
+            font-weight: 700; color: #eecfa1; font-size: 1.1rem; margin-bottom: 5px;
+        }
+
+        .project-details {
+            max-height: 0; overflow: hidden; opacity: 0;
+            transition: all 0.5s ease 0.1s; margin-top: 15px; padding-top: 0;
+            border-top: 1px solid rgba(194, 178, 128, 0.1);
+            font-size: 0.8rem; line-height: 1.6; color: rgba(255,255,255,0.7);
+        }
+
+        .project-card:hover .project-details {
+            max-height: 500px; opacity: 1; padding-top: 15px;
+        }
+        
+        .tech-stack {
+            display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap;
+        }
+        
+        .tech-tag {
+            background: rgba(194, 178, 128, 0.1); padding: 2px 8px;
+            border-radius: 4px; font-size: 0.7rem; color: #eecfa1;
+        }
+
+        /* TYPOGRAPHY */
+        .scroll-section {
+            position: absolute; left: 0; width: 100%; height: 100vh;
+            display: flex; flex-direction: column; justify-content: center;
+            padding: 0 5vw; opacity: 0; transform: translateX(-20px);
+            filter: blur(10px); 
+            transition: opacity 1s ease, transform 1s cubic-bezier(0.22, 1, 0.36, 1), filter 1s ease;
+        }
+
+        .scroll-section.active {
+            opacity: 1; transform: translateX(0); filter: blur(0);
+        }
+
+        .scroll-section.align-right {
+            align-items: flex-end; text-align: right; transform: translateX(20px); 
+        }
+        
+        .scroll-section.align-right .sub-text {
+            border-left: none; padding-left: 0; border-right: 2px solid #eecfa1; padding-right: 20px;
+        }
+
+        .scroll-section.align-right.active { transform: translateX(0); }
+
+        .big-text {
+            font-family: 'Syncopate', sans-serif; font-weight: 700;
+            font-size: clamp(3rem, 12vw, 15rem); line-height: 0.85;
+            text-transform: uppercase; letter-spacing: -0.05em; color: #eecfa1; 
+            text-shadow: 0 0 50px rgba(238, 207, 161, 0.1); mix-blend-mode: plus-lighter;
+        }
+
+        .sub-text {
+            font-family: 'Inter', sans-serif; font-weight: 300;
+            font-size: clamp(1rem, 2vw, 1.5rem); letter-spacing: 0.2em;
+            text-transform: uppercase; margin-top: 2rem;
+            border-left: 2px solid #eecfa1; padding-left: 20px; color: rgba(255,255,255,0.7);
+        }
+
+        /* FOOTER & RESPONSIVE */
+        .hope-section {
+            position: relative; z-index: 30; min-height: 90vh;
+            background: linear-gradient(to top, #0a0805 0%, transparent 100%);
+            display: flex; flex-direction: column; justify-content: flex-end;
+            align-items: center; padding-bottom: 50px; overflow: hidden;
+        }
+        
+        .remote-ops {
+            margin-bottom: 30px; text-align: center;
+            font-family: 'JetBrains Mono', monospace;
+            opacity: 0; transform: translateY(20px); transition: all 1s ease;
+        }
+        .remote-ops.visible { opacity: 1; transform: translateY(0); }
+        .ops-list { display: flex; gap: 25px; justify-content: center; flex-wrap: wrap; }
+        .op-item { font-size: 0.8rem; color: #eecfa1; display: flex; align-items: center; gap: 8px; padding: 8px 16px; border: 1px solid rgba(238, 207, 161, 0.1); border-radius: 20px; background: rgba(0,0,0,0.3); }
+        .status-dot { width: 6px; height: 6px; background-color: #4ade80; border-radius: 50%; box-shadow: 0 0 8px #4ade80; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+        .hope-image-container { width: 100%; height: 45vh; overflow: hidden; position: relative; margin-bottom: 40px; opacity: 0; transform: translateY(50px); transition: all 1.5s ease-out; }
+        .hope-image-container.visible { opacity: 1; transform: translateY(0); }
+        .hope-image { width: 100%; height: 100%; object-fit: cover; filter: grayscale(100%) contrast(120%); transition: filter 2s ease; }
+        .hope-image-container:hover .hope-image { filter: grayscale(0%) contrast(100%); }
+        .footer-links { display: flex; gap: 20px; margin-top: 10px; }
+        .contact-btn { border: 1px solid rgba(238, 207, 161, 0.3); padding: 15px 40px; font-family: 'Syncopate', sans-serif; font-size: 0.8rem; color: #eecfa1; text-decoration: none; transition: all 0.3s; background: rgba(0,0,0,0.5); }
+        .contact-btn:hover { background: #eecfa1; color: #0a0805; letter-spacing: 2px; }
+
+        /* AUDIO PLAYER HIDDEN */
+        #audio-controls {
+            position: fixed; bottom: 20px; left: 20px; z-index: 200;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.7rem;
+            color: #eecfa1; cursor: pointer; opacity: 0.5; transition: opacity 0.3s;
+        }
+        #audio-controls:hover { opacity: 1; }
+
+        /* RESPONSIVE OVERRIDES */
+        @media (max-width: 768px) {
+            .sticky-wrapper { height: auto; overflow: visible; }
+            .cube-container { position: fixed; opacity: 0.3; }
+            .content-layer { position: relative; height: auto; padding-top: 100px; display: flex; flex-direction: column; gap: 20px; padding-bottom: 100px; }
+            
+            /* Stack projects vertically on mobile */
+            .project-card {
+                position: relative !important; 
+                top: auto !important; left: auto !important; right: auto !important;
+                width: 90% !important; margin: 0 auto;
+                transform: rotate(0deg) !important;
+            }
+            .scroll-section { position: relative; height: 60vh; top: auto !important; opacity: 1; filter: none; transform: none; }
+            .scroll-section.align-right { text-align: left; align-items: flex-start; }
+            .big-text { font-size: 3rem; }
+        }
+    </style>
+</head>
+<body>
+<!-- AUDIO ENGINE -->
+<audio id="bg-audio" loop="">
+<!-- Lofi Deep Focus Beat -->
+<source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3" type="audio/mpeg"/>
+</audio>
+<div id="audio-controls">[ SOUND: OFF ]</div>
+<div class="code-bg" id="code-bg"></div>
+<canvas id="odyssey-canvas"></canvas>
+<div class="sticky-wrapper" id="sticky-wrapper">
+<div class="cube-container"><canvas id="cube-canvas"></canvas></div>
+<div class="content-layer">
+<!-- Left Side Projects with IDs p1, p3, p5, p7 -->
+<div class="project-card" id="p1" style="top: 15%; left: 5%;">
+<span class="project-number">01</span><img class="project-art" src="https://image.pollinations.ai/prompt/abstract%20data%20stream%20neural%20network%20digital%20grid%20minimalist%20dark%20ui?width=400&amp;height=300&amp;nologo=true"/>
+<!-- Image Injected Here by Python -->
+<div class="project-title">NEXUS</div>
+<div>A secure, distributed data fabric for real-time patient record management.</div>
+<div class="project-details">Ensures immutable data integrity and seamless synchronization across disparate medical systems, mitigating critical data silos and enhancing interoperability for rapid diagnostic access. This system resolves issues of data fragmentation and enhances auditability, crucial for compliance and patient safety.<div class="tech-stack"><span class="tech-tag">Python</span><span class="tech-tag">PostgreSQL</span><span class="tech-tag">Data Encryption Standard</span></div></div>
+</div>
+<div class="project-card" id="p3" style="top: 35%; left: 8%;">
+<span class="project-number">03</span><img class="project-art" src="https://image.pollinations.ai/prompt/abstract%20brain%20scan%20glowing%20data%20future%20vision%20minimalist%20dark%20ui?width=400&amp;height=300&amp;nologo=true"/>
+<div class="project-title">ORACLE</div>
+<div>An AI-driven diagnostic pre-computation and resource forecasting engine.</div>
+<div class="project-details">Analyzes vast patient datasets to identify latent patterns for early risk detection and future resource allocation, enabling proactive intervention and personalized patient pathways. This significantly reduces diagnostic lag and optimizes strategic resource deployment.<div class="tech-stack"><span class="tech-tag">TensorFlow</span><span class="tech-tag">Data Lake</span><span class="tech-tag">Predictive Modeling</span></div></div>
+</div>
+<div class="project-card" id="p5" style="top: 55%; left: 4%;">
+<span class="project-number">05</span><img class="project-art" src="https://image.pollinations.ai/prompt/abstract%20digital%20lock%20security%20shield%20data%20vault%20minimalist%20dark%20ui?width=400&amp;height=300&amp;nologo=true"/>
+<div class="project-title">SHIELD</div>
+<div>Decentralized identity and access management protocol for sensitive patient information.</div>
+<div class="project-details">Implements cryptographic hashing and zero-knowledge proofs to secure personal health data, ensuring regulatory compliance and safeguarding privacy at an atomic level. This solution directly combats unauthorized access and ensures granular data control for every patient record.<div class="tech-stack"><span class="tech-tag">Blockchain</span><span class="tech-tag">Cryptography</span><span class="tech-tag">Identity Protocols</span></div></div>
+</div>
+<div class="project-card" id="p7" style="top: 75%; left: 6%;">
+<span class="project-number">07</span><img class="project-art" src="https://image.pollinations.ai/prompt/abstract%20virtual%20reality%20glowing%20avatar%20remote%20connection%20minimalist%20dark%20ui?width=400&amp;height=300&amp;nologo=true"/>
+<div class="project-title">AETHER</div>
+<div>Hyper-secure, low-latency virtual consultation framework for telemedicine.</div>
+<div class="project-details">Establishes encrypted peer-to-peer connections for remote diagnostics and consultations, ensuring patient confidentiality and robust service delivery in dispersed environments. This system overcomes geographical barriers while maintaining the highest standards of data security and communication clarity.<div class="tech-stack"><span class="tech-tag">WebRTC</span><span class="tech-tag">Edge Computing</span><span class="tech-tag">Anomaly Detection</span></div></div>
+</div>
+<!-- Right Side Projects with IDs p2, p4, p6, p8 -->
+<div class="project-card" id="p2" style="top: 25%; right: 5%;">
+<span class="project-number">02</span><img class="project-art" src="https://image.pollinations.ai/prompt/abstract%20time%20warp%20quantum%20clock%20abstract%20geometry%20minimalist%20dark%20ui?width=400&amp;height=300&amp;nologo=true"/>
+<div class="project-title">CHRONOS</div>
+<div>Predictive temporal orchestration engine for optimizing complex medical appointment schedules.</div>
+<div class="project-details">Leverages advanced algorithms to minimize no-show rates and dynamically allocate clinical resources, drastically improving operational efficiency and patient throughput. It solves the critical problem of resource contention and scheduling conflicts in high-volume medical environments.<div class="tech-stack"><span class="tech-tag">Python</span><span class="tech-tag">Temporal Logic</span><span class="tech-tag">Asynchronous Workers</span></div></div>
+</div>
+<div class="project-card" id="p4" style="top: 45%; right: 8%;">
+<span class="project-number">04</span><img class="project-art" src="https://image.pollinations.ai/prompt/abstract%20fiber%20optic%20glowing%20lines%20network%20node%20minimalist%20dark%20ui?width=400&amp;height=300&amp;nologo=true"/>
+<div class="project-title">CONDUIT</div>
+<div>A hyper-secure, bi-directional data pipeline for diverse healthcare ecosystems.</div>
+<div class="project-details">Facilitates seamless, encrypted data exchange between disparate EMRs, lab systems, and pharmacies, ensuring critical information flows without compromise or latency. It addresses the pervasive challenge of system integration, fostering a unified view of patient health.<div class="tech-stack"><span class="tech-tag">Rust</span><span class="tech-tag">WebSockets</span><span class="tech-tag">API Gateway</span></div></div>
+</div>
+<div class="project-card" id="p6" style="top: 65%; right: 4%;">
+<span class="project-number">06</span><img class="project-art" src="https://image.pollinations.ai/prompt/abstract%20holographic%20display%20HUD%20neon%20interface%20minimalist%20dark%20ui?width=400&amp;height=300&amp;nologo=true"/>
+<div class="project-title">VISTA</div>
+<div>An intuitive, real-time operational dashboard for enhanced clinician situational awareness.</div>
+<div class="project-details">Presents complex patient and operational data through a minimalist, responsive interface, empowering healthcare professionals with immediate, actionable insights for critical decision-making. It solves the problem of data overload by distilling critical information into a consumable format.<div class="tech-stack"><span class="tech-tag">React.js</span><span class="tech-tag">GraphQL</span><span class="tech-tag">Real-time Data Streaming</span></div></div>
+</div>
+<div class="project-card" id="p8" style="top: 85%; right: 6%;">
+<span class="project-number">08</span><img class="project-art" src="https://image.pollinations.ai/prompt/abstract%20digital%20mind%20abstract%20communication%20data%20flow%20minimalist%20dark%20ui?width=400&amp;height=300&amp;nologo=true"/>
+<div class="project-title">SYNAPSE</div>
+<div>Intelligent pre-screening and automated patient intake system using advanced NLP.</div>
+<div class="project-details">Utilizes natural language processing to gather preliminary patient information, triage symptoms, and guide individuals to appropriate care pathways, significantly reducing administrative burden and wait times. It streamlines the initial patient interaction, enhancing efficiency and accuracy of intake.<div class="tech-stack"><span class="tech-tag">NLP</span><span class="tech-tag">Machine Learning</span><span class="tech-tag">Conversational AI</span></div></div>
+</div>
+<!-- TEXT SECTIONS with IDs -->
+<div class="scroll-section" data-frame="5" style="top: 0%;">
+<div class="sub-text">// Wasiu Mutairu</div>
+<div class="big-text" id="text-1a">DATA</div>
+<div class="big-text text-transparent bg-clip-text bg-gradient-to-r from-yellow-700 to-amber-100" id="text-1b">SYNCHRONIZED.</div>
+</div>
+<div class="scroll-section" data-frame="35" style="top: 29%;">
+<div class="sub-text">02 // The Core</div>
+<div class="big-text" id="text-2a">INTUITION</div>
+<div class="big-text" id="text-2b">AUGMENTED.</div>
+</div>
+<div class="scroll-section align-right" data-frame="65" style="top: 54%;">
+<div class="sub-text">03 // The Synthesis</div>
+<div class="big-text" id="text-3a">EFFICIENCY</div>
+<div class="big-text" id="text-3b">ARBITRAGED.</div>
+</div>
+<div class="scroll-section align-right" data-frame="90" style="top: 75%;">
+<div class="sub-text">04 // The Output</div>
+<div class="big-text" id="text-4a">FUTURES</div>
+<div class="big-text" id="text-4b">ENGINEERED.</div>
+</div>
+</div>
+</div>
+<div class="hope-section">
+<div class="remote-ops" id="remote-ops">
+<div class="ops-title">REMOTE SYSTEMS // ACTIVE</div>
+<div class="ops-list">
+<div class="op-item"><span class="status-dot"></span>SLACK</div>
+<div class="op-item"><span class="status-dot"></span>LOOM</div>
+<div class="op-item"><span class="status-dot"></span>NOTION</div>
+</div>
+</div>
+<div class="hope-image-container" id="hope-visual">
+<img alt="Horizon" class="hope-image" src="https://images.unsplash.com/photo-1464802686167-b939a6910659?q=80&amp;w=2050&amp;auto=format&amp;fit=crop"/>
+<div class="absolute bottom-4 right-8 text-xs font-mono tracking-widest text-white/50">Coordinates: World</div>
+</div>
+<p class="text-amber-100/60 font-light tracking-widest mb-4 text-center text-sm" id="footer-quote">In the delicate architecture of health, every data point is a beacon, guiding us from the chaotic unknown towards an engineered future of precision care and optimized human experience.</p>
+<div class="footer-links">
+<a class="contact-btn" href="mailto:officialmutairu@gmail.com">EMAIL</a>
+<a class="contact-btn" href="https://github.com/Wasberry-spaceapps/" target="_blank">GITHUB</a>
+</div>
+</div>
+<script>
+        // --- AUDIO ENGINE ---
+        const audio = document.getElementById('bg-audio');
+        const audioBtn = document.getElementById('audio-controls');
+        audio.volume = 0.2; 
+        audioBtn.addEventListener('click', () => {
+            if(audio.paused) {
+                audio.play();
+                audioBtn.innerText = "[ SOUND: ON ]";
+                audioBtn.style.opacity = 1;
+            } else {
+                audio.pause();
+                audioBtn.innerText = "[ SOUND: OFF ]";
+                audioBtn.style.opacity = 0.5;
+            }
+        });
+
+        /* [EXISTING JS LOGIC - DO NOT TOUCH] */
+        const codeBg = document.getElementById('code-bg');
+        const snippets = ["const void = init();", "if (chaos) return peace;", "matrix.transform(x, y);", "import { calm } from 'mind';", "while(true) { dream(); }", "canvas.getContext('2d');", "opacity: 0.1;", "=> function(e) {", "<div class='ghost'></div>"];
+        for(let i=0; i<15; i++) {
+            const el = document.createElement('div');
+            el.classList.add('code-line');
+            el.innerText = snippets[Math.floor(Math.random() * snippets.length)];
+            el.style.top = Math.random() * 100 + '%';
+            el.style.left = Math.random() * 100 + '%';
+            el.style.opacity = Math.random() * 0.1 + 0.02; 
+            el.style.transform = `rotate(${Math.random() * 20 - 10}deg)`;
+            codeBg.appendChild(el);
+        }
+        const odysseyCanvas = document.getElementById('odyssey-canvas');
+        const odysseyCtx = odysseyCanvas.getContext('2d');
+        let dunes = [];
+        let plane = { x: -50, y: 0, speed: 2 }; 
+        function initOdyssey() {
+            odysseyCanvas.width = window.innerWidth;
+            odysseyCanvas.height = window.innerHeight;
+            dunes = [
+                { color: 'rgba(194, 178, 128, 0.1)', speed: 0.2, amplitude: 50, wavelength: 0.002, offset: 0, y: 0.8 },
+                { color: 'rgba(160, 140, 90, 0.15)', speed: 0.1, amplitude: 80, wavelength: 0.001, offset: 100, y: 0.6 },
+                { color: 'rgba(120, 100, 60, 0.2)', speed: 0.05, amplitude: 120, wavelength: 0.0005, offset: 200, y: 0.5 } 
+            ];
+            plane.y = odysseyCanvas.height * 0.3;
+        }
+        function drawPlane(time) {
+            odysseyCtx.save();
+            plane.x += plane.speed;
+            if(plane.x > odysseyCanvas.width + 50) plane.x = -50;
+            const bob = Math.sin(time * 2) * 10;
+            odysseyCtx.translate(plane.x, plane.y + bob);
+            odysseyCtx.beginPath();
+            odysseyCtx.moveTo(0, 0);
+            odysseyCtx.lineTo(-15, 10);
+            odysseyCtx.lineTo(20, 0); 
+            odysseyCtx.lineTo(-15, -10);
+            odysseyCtx.closePath();
+            odysseyCtx.fillStyle = 'rgba(238, 207, 161, 0.4)'; 
+            odysseyCtx.fill();
+            odysseyCtx.restore();
+        }
+        function drawOdyssey() {
+            const gradient = odysseyCtx.createLinearGradient(0, 0, 0, odysseyCanvas.height);
+            gradient.addColorStop(0, '#0a0805'); 
+            gradient.addColorStop(1, '#1c160b'); 
+            odysseyCtx.fillStyle = gradient;
+            odysseyCtx.fillRect(0, 0, odysseyCanvas.width, odysseyCanvas.height);
+            const time = Date.now() * 0.001;
+            drawPlane(time);
+            dunes.forEach(dune => {
+                odysseyCtx.beginPath();
+                odysseyCtx.moveTo(0, odysseyCanvas.height);
+                for(let x = 0; x <= odysseyCanvas.width; x += 10) {
+                    const y = (dune.y * odysseyCanvas.height) + 
+                              Math.sin(x * dune.wavelength + dune.offset + time * dune.speed) * dune.amplitude +
+                              Math.cos(x * dune.wavelength * 0.5 + time * dune.speed * 0.5) * 20;
+                    odysseyCtx.lineTo(x, y);
+                }
+                odysseyCtx.lineTo(odysseyCanvas.width, odysseyCanvas.height);
+                odysseyCtx.fillStyle = dune.color;
+                odysseyCtx.fill();
+            });
+            requestAnimationFrame(drawOdyssey);
+        }
+        const cubeCanvas = document.getElementById('cube-canvas');
+        const cubeCtx = cubeCanvas.getContext('2d');
+        const wrapper = document.getElementById('sticky-wrapper');
+        const sections = document.querySelectorAll('.scroll-section');
+        const hopeVisual = document.getElementById('hope-visual');
+        const remoteOps = document.getElementById('remote-ops');
+        let targetScroll = 0;
+        let currentScroll = 0;
+        let lerpFactor = 0.05;
+        function initCube() {
+            cubeCanvas.width = window.innerWidth;
+            cubeCanvas.height = window.innerHeight;
+            renderCube();
+        }
+        function renderCube() {
+            currentScroll += (targetScroll - currentScroll) * lerpFactor;
+            const w = cubeCanvas.width;
+            const h = cubeCanvas.height;
+            const cx = w / 2;
+            const cy = h / 2;
+            cubeCtx.clearRect(0, 0, w, h);
+            const rotation = currentScroll * Math.PI * 2.5; 
+            const expansion = currentScroll * 1.8;
+            cubeCtx.strokeStyle = '#eecfa1'; 
+            cubeCtx.lineWidth = 1.5; 
+            cubeCtx.lineJoin = 'miter'; 
+            const size = Math.min(w, h) * 0.18;
+            let vertices = [
+                {x: -1, y: -1, z: -1}, {x: 1, y: -1, z: -1},
+                {x: 1, y: 1, z: -1}, {x: -1, y: 1, z: -1},
+                {x: -1, y: -1, z: 1}, {x: 1, y: -1, z: 1},
+                {x: 1, y: 1, z: 1}, {x: -1, y: 1, z: 1}
+            ];
+            const edges = [
+                [0,1], [1,2], [2,3], [3,0],
+                [4,5], [5,6], [6,7], [7,4],
+                [0,4], [1,5], [2,6], [3,7]
+            ];
+            edges.forEach((edge, i) => {
+                let v1 = { ...vertices[edge[0]] };
+                let v2 = { ...vertices[edge[1]] };
+                const shatterDir = i % 2 === 0 ? 1 : -1;
+                [v1, v2].forEach(v => {
+                    v.x += (v.x * expansion * 0.5 * shatterDir);
+                    v.y += (v.y * expansion * 0.5 * shatterDir);
+                    v.z += (v.z * expansion * 0.5 * shatterDir);
+                    let x = v.x * Math.cos(rotation) - v.z * Math.sin(rotation);
+                    let z = v.x * Math.sin(rotation) + v.z * Math.cos(rotation);
+                    v.x = x; v.z = z;
+                    let y = v.y * Math.cos(rotation * 0.5) - v.z * Math.sin(rotation * 0.5);
+                    z = v.y * Math.sin(rotation * 0.5) + v.z * Math.cos(rotation * 0.5);
+                    v.y = y; v.z = z;
+                    const fov = 600;
+                    const scale = fov / (fov + v.z * size + 500);
+                    v.px = cx + v.x * size * scale;
+                    v.py = cy + v.y * size * scale;
+                });
+                const depth = (v1.z + v2.z) / 2;
+                cubeCtx.globalAlpha = Math.max(0.1, 1 - (depth / size));
+                cubeCtx.beginPath();
+                cubeCtx.moveTo(v1.px, v1.py);
+                cubeCtx.lineTo(v2.px, v2.py);
+                cubeCtx.stroke();
+            });
+            cubeCtx.globalAlpha = 1;
+        }
+        function handleScroll() {
+            const scrollTop = window.scrollY;
+            const maxScroll = wrapper.scrollHeight - window.innerHeight;
+            const rawFraction = scrollTop / maxScroll;
+            targetScroll = Math.max(0, Math.min(1, rawFraction));
+            const frame = Math.floor(rawFraction * 100);
+            sections.forEach(section => {
+                const target = parseInt(section.getAttribute('data-frame'));
+                if (frame >= target - 10 && frame <= target + 15) {
+                    section.classList.add('active');
+                } else {
+                    section.classList.remove('active');
+                }
+            });
+            const footerTrigger = document.querySelector('.hope-section').offsetTop;
+            const scrollBottom = scrollTop + window.innerHeight;
+            if (scrollBottom > footerTrigger + 100) {
+                hopeVisual.classList.add('visible');
+                remoteOps.classList.add('visible'); 
+                cubeCanvas.style.opacity = '0'; 
+                cubeCanvas.style.transition = 'opacity 1s ease';
+            } else {
+                cubeCanvas.style.opacity = '1';
+            }
+        }
+        function animate() {
+            renderCube();
+            requestAnimationFrame(animate);
+        }
+        window.addEventListener('resize', () => { initOdyssey(); initCube(); });
+        window.addEventListener('scroll', handleScroll);
+        initOdyssey(); drawOdyssey(); initCube(); handleScroll(); animate(); 
+    </script>
+</body>
+</html>
