@@ -3,7 +3,7 @@ name: Deploy static content to Pages
 
 on:
   push:
-    branches: [main, master, archive-old-portfolio] # Include his default branches and branch names to capture his push automatically
+    branches: [main, master, archive-old-portfolio]
 
   workflow_dispatch:
 
@@ -33,7 +33,7 @@ jobs:
           node-version: 20
           cache: npm
       - name: Install dependencies
-        run: npm ci
+        run: npm install
       - name: Build
         run: npm run build
       - name: Setup Pages
